@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembuat Judul & Deskripsi Video AI</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons for aesthetic icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Mengatur font Inter sebagai default */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Warna latar belakang gelap */
+        }
+        /* Custom scrollbar style for a modern look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #4a5568;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #1e293b;
+        }
+        .loading-animation {
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white">
+
+    <!-- Loading Screen (muncul di awal) -->
+    <div id="loadingScreen" class="fixed inset-0 flex flex-col items-center justify-center bg-gray-900 text-white z-50">
+        <div class="text-center">
+            <div class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-500 mb-2 animate-pulse">
+                Pembuat Judul Deskripsi Konten AI
+            </div>
+            <p class="text-gray-400 text-lg tracking-wider">CelotehTeam Developer</p>
+            <!-- Spinner untuk estetika -->
+            <div class="mt-8 loading-animation w-8 h-8 border-4 border-t-blue-500 border-white rounded-full mx-auto"></div>
+        </div>
+    </div>
+
+    <!-- Main Content Container (disembunyikan di awal) -->
+    <div id="mainContent" class="hidden p-4 md:p-8">
+        <!-- Kontainer Utama -->
+        <div class="max-w-6xl mx-auto">
+            <header class="text-center mb-10">
+                <!-- Judul Utama yang Diperbarui -->
+                <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-500 mb-2">
+                    Pembuat Judul Deskripsi Konten AI
+                </h1>
+                <p class="text-gray-400 text-lg mb-2">CelotehTeam Developer</p>
+                <p class="text-gray-400">Hasilkan 3 Judul Menarik & Deskripsi SEO-Friendly dalam Sekejap.</p>
+            </header>
+
+            <!-- Area Input -->
+            <div class="bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl mb-8">
+                <h2 class="text-2xl font-semibold mb-4 flex items-center text-gray-200">
+                    <i data-lucide="zap" class="w-6 h-6 mr-3 text-yellow-400"></i>
+                    Ide Video Anda
+                </h2>
+                <textarea
+                    id="videoTopicInput"
+                    rows="4"
+                    placeholder="Contoh: Tutorial memasak rendang padang 30 menit. Target audiens: mahasiswa yang ingin hemat biaya."
+                    class="w-full p-4 rounded-lg bg-gray-700 text-gray-200 border border-gray-600 focus:ring-blue-500 focus:border-blue-500 transition duration-200 resize-none"
+                ></textarea>
+                
+                <!-- Tombol Generate dan Update -->
+                <div class="mt-4 flex flex-col md:flex-row gap-4">
+                    <button
+                        id="generateButton"
+                        onclick="handleGenerate('generate')"
+                        class="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white font-bold rounded-lg shadow-lg transform transition duration-300 hover:scale-[1.02] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <i data-lucide="sparkles" class="w-5 h-5 mr-2"></i>
+                        <span>Hasilkan Konten!</span>
+                    </button>
+                    <button
+                        id="updateButton"
+                        onclick="handleGenerate('update')"
+                        class="w-full md:w-auto px-6 py-3 bg-gray-700 hover:bg-gray-600 text-gray-300 font-bold rounded-lg shadow-lg transform transition duration-300 hover:scale-[1.02] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hidden" 
+                    >
+                        <i data-lucide="refresh-cw" class="w-5 h-5 mr-2"></i>
+                        <span>Perbarui Konten</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Area Output -->
+            <div id="outputContainer" class="grid lg:grid-cols-3 gap-8">
+                <!-- Kolom Judul -->
+                <div class="lg:col-span-1">
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-2xl h-full flex flex-col">
+                        <h2 class="text-2xl font-semibold mb-4 flex items-center text-gray-200">
+                            <i data-lucide="heading-1" class="w-6 h-6 mr-3 text-red-400"></i>
+                            3 Pilihan Judul Terbaik
+                        </h2>
+                        <div id="titleOutput" class="space-y-4 flex-grow">
+                            <!-- Judul akan dimasukkan di sini -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kolom Deskripsi -->
+                <div class="lg:col-span-2">
+                    <div class="bg-gray-800 p-6 rounded-xl shadow-2xl h-full flex flex-col">
+                        <h2 class="text-2xl font-semibold mb-4 flex items-center text-gray-200">
+                            <i data-lucide="align-left" class="w-6 h-6 mr-3 text-green-400"></i>
+                            Deskripsi Video (SEO)
+                        </h2>
+                        <div id="descriptionOutput" class="flex-grow">
+                            <!-- Deskripsi akan dimasukkan di sini -->
+                        </div>
+                        <button
+                            id="copyDescriptionButton"
+                            onclick="copyContent('descriptionOutput', 'Deskripsi')"
+                            class="mt-4 w-full px-6 py-2 bg-gray-700 hover:bg-gray-600 text-sm text-gray-300 font-medium rounded-lg transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled
+                        >
+                            <i data-lucide="clipboard" class="w-4 h-4 mr-2"></i>
+                            Salin Deskripsi
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Area Notifikasi -->
+            <div id="notificationArea" class="fixed bottom-4 right-4 z-50"></div>
+        </div>
+    </div>
+
+    <!-- Logika JavaScript -->
+    <script>
+        // Variabel global untuk API
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        const videoTopicInput = document.getElementById('videoTopicInput');
+        const generateButton = document.getElementById('generateButton');
+        const updateButton = document.getElementById('updateButton'); // Tombol baru
+        const titleOutput = document.getElementById('titleOutput');
+        const descriptionOutput = document.getElementById('descriptionOutput');
+        const copyDescriptionButton = document.getElementById('copyDescriptionButton');
+
+        // Fungsi untuk menginisialisasi aplikasi dan menyembunyikan loading screen
+        function initApp() {
+            // Inisialisasi ikon Lucide
+            lucide.createIcons();
+
+            // Tampilkan konten utama dan sembunyikan loading screen setelah 5000ms (5 detik)
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+            }, 5000); // Durasi loading screen 5 detik
+        }
+
+        // Panggil initApp saat jendela telah dimuat sepenuhnya
+        window.onload = initApp;
+
+
+        // --- UTILITY FUNCTIONS ---
+
+        /**
+         * Menampilkan notifikasi sukses/error
+         * @param {string} message - Pesan yang akan ditampilkan.
+         * @param {string} type - Tipe notifikasi ('success' atau 'error').
+         */
+        function showNotification(message, type = 'success') {
+            const area = document.getElementById('notificationArea');
+            const color = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const icon = type === 'success' ? 'check-circle' : 'alert-triangle';
+
+            const notification = document.createElement('div');
+            notification.className = `${color} text-white p-3 rounded-lg shadow-xl mb-3 flex items-center opacity-0 transition-opacity duration-300 max-w-xs`;
+            notification.innerHTML = `
+                <i data-lucide="${icon}" class="w-5 h-5 mr-2 flex-shrink-0"></i>
+                <span class="text-sm">${message}</span>
+            `;
+
+            area.appendChild(notification);
+            lucide.createIcons(); // Re-render icons
+
+            // Fade in
+            setTimeout(() => notification.classList.remove('opacity-0'), 10);
+
+            // Fade out and remove
+            setTimeout(() => {
+                notification.classList.add('opacity-0');
+                notification.addEventListener('transitionend', () => notification.remove());
+            }, 3000);
+        }
+
+        /**
+         * Menyalin konten ke clipboard.
+         * @param {string} elementId - ID elemen div output.
+         * @param {string} typeName - Nama konten (e.g., "Judul", "Deskripsi").
+         */
+        function copyContent(elementId, typeName) {
+            const element = document.getElementById(elementId);
+            let textToCopy = '';
+
+            if (elementId === 'descriptionOutput') {
+                // Untuk deskripsi, ambil teks saja
+                textToCopy = element.innerText;
+            } else if (elementId.startsWith('title-')) {
+                // Untuk judul, ambil teks dari elemen spesifik
+                textToCopy = element.innerText;
+            } else if (elementId === 'titleOutput') {
+                // Untuk area judul, salin semua judul
+                const titles = Array.from(element.querySelectorAll('p[id^="title-"]')).map(p => p.innerText.trim());
+                if (titles.length === 0) {
+                     showNotification(`Tidak ada ${typeName} untuk disalin.`, 'error');
+                     return;
+                }
+                textToCopy = titles.join('\n');
+            } else {
+                showNotification('Kesalahan penyalinan: Elemen tidak ditemukan.', 'error');
+                return;
+            }
+
+            if (!textToCopy) {
+                showNotification(`Tidak ada ${typeName} untuk disalin.`, 'error');
+                return;
+            }
+
+            try {
+                // Fallback for document.execCommand('copy') due to iFrame restrictions
+                const tempInput = document.createElement('textarea');
+                tempInput.value = textToCopy;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+
+                showNotification(`${typeName} berhasil disalin ke clipboard!`);
+            } catch (err) {
+                console.error('Gagal menyalin:', err);
+                showNotification(`Gagal menyalin ${typeName}.`, 'error');
+            }
+        }
+
+        /**
+         * Menampilkan pesan loading dan menonaktifkan tombol.
+         * @param {boolean} isLoading
+         * @param {'generate' | 'update'} [buttonType='generate'] - Tipe tombol yang sedang ditekan
+         */
+        function setLoading(isLoading, buttonType = 'generate') {
+            if (isLoading) {
+                generateButton.disabled = true;
+                updateButton.disabled = true;
+                copyDescriptionButton.disabled = true;
+
+                if (buttonType === 'generate') {
+                    generateButton.innerHTML = `<div class="loading-animation w-5 h-5 border-2 border-white rounded-full mr-2"></div> Menghasilkan...`;
+                } else {
+                    updateButton.innerHTML = `<div class="loading-animation w-5 h-5 border-2 border-white rounded-full mr-2"></div> Memperbarui...`;
+                }
+
+            } else {
+                // Pulihkan status dan HTML tombol Generate
+                generateButton.disabled = false;
+                generateButton.innerHTML = `<i data-lucide="sparkles" class="w-5 h-5 mr-2"></i> <span>Hasilkan Konten!</span>`;
+                
+                // Pulihkan status dan HTML tombol Update (hanya jika tidak disembunyikan)
+                if (!updateButton.classList.contains('hidden')) {
+                    updateButton.disabled = false;
+                }
+                updateButton.innerHTML = `<i data-lucide="refresh-cw" class="w-5 h-5 mr-2"></i> <span>Perbarui Konten</span>`;
+
+                lucide.createIcons();
+            }
+        }
+
+        /**
+         * Memparsing respons dari Gemini API menjadi Judul dan Deskripsi.
+         * @param {string} text - Teks mentah dari API.
+         * @returns {{titles: string[], description: string}}
+         */
+        function parseGeminiResponse(text) {
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+            const output = { titles: [], description: '' };
+            let descriptionStarted = false;
+
+            for (const line of lines) {
+                // Mencari tag Judul
+                if (line.startsWith('TITLE_1:')) {
+                    output.titles.push(line.substring('TITLE_1:'.length).trim());
+                } else if (line.startsWith('TITLE_2:')) {
+                    output.titles.push(line.substring('TITLE_2:'.length).trim());
+                } else if (line.startsWith('TITLE_3:')) {
+                    output.titles.push(line.substring('TITLE_3:'.length).trim());
+                } 
+                // Mencari tag Deskripsi
+                else if (line.startsWith('DESCRIPTION:')) {
+                    output.description = line.substring('DESCRIPTION:'.length).trim();
+                    descriptionStarted = true;
+                } 
+                // Mengumpulkan sisa baris setelah DESCRIPTION: sebagai bagian dari deskripsi
+                else if (descriptionStarted) {
+                    output.description += '\n' + line.trim();
+                }
+            }
+
+            // Fallback: Jika parsing gagal total, gunakan teks mentah
+            if (output.titles.length === 0 && !output.description) {
+                output.description = text;
+            }
+
+            return output;
+        }
+
+        /**
+         * Merender hasil yang diparsing ke UI.
+         * @param {{titles: string[], description: string}} content
+         */
+        function renderContent(content) {
+            // Render Titles
+            titleOutput.innerHTML = '';
+            content.titles.forEach((title, index) => {
+                const titleBlock = document.createElement('div');
+                titleBlock.className = 'bg-gray-700 p-3 rounded-lg flex items-center justify-between group shadow-md';
+                titleBlock.innerHTML = `
+                    <p id="title-${index}" class="text-sm font-medium text-gray-200 group-hover:text-blue-300 transition-colors duration-200 cursor-pointer">
+                        ${title}
+                    </p>
+                    <button onclick="copyContent('title-${index}', 'Judul ke-${index + 1}')" class="text-gray-400 hover:text-white transition duration-150 ml-3 flex-shrink-0">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                `;
+                titleOutput.appendChild(titleBlock);
+            });
+
+            // Render Description
+            // Menggunakan innerText untuk mencegah injeksi HTML jika deskripsi mengandung markup
+            const descriptionText = content.description.trim();
+            descriptionOutput.innerHTML = ''; 
+            const descParagraph = document.createElement('p');
+            descParagraph.className = 'whitespace-pre-wrap text-gray-300 text-sm';
+            descParagraph.innerText = descriptionText;
+            descriptionOutput.appendChild(descParagraph);
+
+            copyDescriptionButton.disabled = descriptionText.length === 0;
+            
+            // Tampilkan tombol Update setelah berhasil generate
+            updateButton.classList.remove('hidden');
+            updateButton.disabled = false;
+
+            lucide.createIcons(); // Render icons on new elements
+        }
+
+        // --- MAIN LOGIC ---
+
+        /**
+         * Mengirim permintaan ke Gemini API.
+         * @param {'generate' | 'update'} buttonType - Tipe tombol yang ditekan.
+         */
+        async function generateContent(buttonType = 'generate') {
+            const userQuery = videoTopicInput.value.trim();
+            if (!userQuery) {
+                showNotification('Silakan masukkan topik video Anda!', 'error');
+                return null;
+            }
+
+            setLoading(true, buttonType); // Set loading state
+
+            // System prompt untuk memandu model
+            const systemPrompt = "Anda adalah pakar strategi konten video dan copywriter profesional. Tugas Anda adalah menghasilkan tiga (3) Judul Video yang sangat menarik dan satu (1) Deskripsi Video yang detail, kaya SEO (Search Engine Optimization), dan persuasif berdasarkan topik yang diberikan pengguna. Pastikan respons Anda mengikuti format berikut secara ketat, tanpa teks tambahan atau pendahuluan di luar format ini. Gunakan bahasa Indonesia formal dan menarik.\n\nFORMAT OUTPUT:\nTITLE_1: [Judul pertama]\nTITLE_2: [Judul kedua]\nTITLE_3: [Judul ketiga]\nDESCRIPTION: [Deskripsi video yang panjang dan terperinci, termasuk ajakan bertindak (call-to-action) untuk subscribe dan like, dan 5 hashtag yang relevan.]";
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                tools: [{ "google_search": {} }], // Aktifkan Google Search untuk grounding
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            // Logika Exponential Backoff untuk penanganan throttling/rate limit
+            const maxRetries = 3;
+            let lastResponse = null;
+
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    lastResponse = await response.json();
+
+                    if (response.ok) {
+                        break; // Sukses, keluar dari loop
+                    } else if (response.status === 429 && attempt < maxRetries - 1) {
+                        // Rate limit, coba lagi dengan delay
+                        const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue;
+                    } else {
+                        throw new Error(`API Error: ${response.status} ${lastResponse.error?.message || response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error("Fetch attempt failed:", error);
+                    if (attempt === maxRetries - 1) {
+                        showNotification('Gagal menghubungi AI setelah beberapa kali coba. Silakan cek koneksi atau coba lagi nanti.', 'error');
+                        return null;
+                    }
+                    const delay = Math.pow(2, attempt) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+
+            setLoading(false, buttonType); // Sembunyikan loading state
+
+            const candidate = lastResponse?.candidates?.[0];
+            const text = candidate?.content?.parts?.[0]?.text;
+
+            if (text) {
+                return parseGeminiResponse(text);
+            } else {
+                showNotification('AI gagal menghasilkan konten. Coba deskripsi topik yang lebih jelas.', 'error');
+                return null;
+            }
+        }
+
+        /**
+         * Handler utama untuk tombol Generate/Update.
+         * @param {'generate' | 'update'} buttonType - Tipe tombol yang ditekan.
+         */
+        async function handleGenerate(buttonType = 'generate') {
+            titleOutput.innerHTML = `<p class="text-gray-500 text-sm italic">${buttonType === 'generate' ? 'Memuat ide judul...' : 'Memperbarui ide judul...'}</p>`;
+            descriptionOutput.innerHTML = `<p class="text-gray-500 text-sm italic">${buttonType === 'generate' ? 'Memuat deskripsi SEO...' : 'Memperbarui deskripsi SEO...'}</p>`;
+            copyDescriptionButton.disabled = true;
+
+            const generatedContent = await generateContent(buttonType); 
+
+            if (generatedContent) {
+                renderContent(generatedContent);
+                const action = buttonType === 'generate' ? 'dibuat' : 'diperbarui';
+                showNotification(`Konten berhasil ${action}!`);
+            } else {
+                // Clear on failure
+                titleOutput.innerHTML = `<p class="text-gray-500 text-sm italic">Gagal menghasilkan konten.</p>`;
+                descriptionOutput.innerHTML = `<p class="text-gray-500 text-sm italic">Gagal menghasilkan konten.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
